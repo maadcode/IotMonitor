@@ -1,0 +1,273 @@
+[
+    {
+        "id": "5767f3833f8242d9",
+        "type": "tab",
+        "label": "Sensor TCP",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "601f2a994af2425d",
+        "type": "tab",
+        "label": "Cartel UDP",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "3baff6148e4badf4",
+        "type": "ui_tab",
+        "name": "Carteles",
+        "icon": "",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "975b660115cf7935",
+        "type": "ui_base",
+        "theme": {
+            "name": "theme-dark",
+            "lightTheme": {
+                "default": "#0094CE",
+                "baseColor": "#0094CE",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": true,
+                "reset": false
+            },
+            "darkTheme": {
+                "default": "#097479",
+                "baseColor": "#097479",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": true,
+                "reset": false
+            },
+            "customTheme": {
+                "name": "Untitled Theme 1",
+                "default": "#4B7930",
+                "baseColor": "#4B7930",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+            },
+            "themeState": {
+                "base-color": {
+                    "default": "#097479",
+                    "value": "#097479",
+                    "edited": false
+                },
+                "page-titlebar-backgroundColor": {
+                    "value": "#097479",
+                    "edited": false
+                },
+                "page-backgroundColor": {
+                    "value": "#111111",
+                    "edited": false
+                },
+                "page-sidebar-backgroundColor": {
+                    "value": "#333333",
+                    "edited": false
+                },
+                "group-textColor": {
+                    "value": "#0eb8c0",
+                    "edited": false
+                },
+                "group-borderColor": {
+                    "value": "#555555",
+                    "edited": false
+                },
+                "group-backgroundColor": {
+                    "value": "#333333",
+                    "edited": false
+                },
+                "widget-textColor": {
+                    "value": "#eeeeee",
+                    "edited": false
+                },
+                "widget-backgroundColor": {
+                    "value": "#097479",
+                    "edited": false
+                },
+                "widget-borderColor": {
+                    "value": "#333333",
+                    "edited": false
+                },
+                "base-font": {
+                    "value": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+                }
+            },
+            "angularTheme": {
+                "primary": "indigo",
+                "accents": "blue",
+                "warn": "red",
+                "background": "grey",
+                "palette": "light"
+            }
+        },
+        "site": {
+            "name": "Node-RED Dashboard",
+            "hideToolbar": "false",
+            "allowSwipe": "false",
+            "lockMenu": "false",
+            "allowTempTheme": "true",
+            "dateFormat": "DD/MM/YYYY",
+            "sizes": {
+                "sx": 48,
+                "sy": 48,
+                "gx": 6,
+                "gy": 6,
+                "cx": 6,
+                "cy": 6,
+                "px": 0,
+                "py": 0
+            }
+        }
+    },
+    {
+        "id": "07dc86e5aaace2eb",
+        "type": "ui_group",
+        "name": "SENSOR1",
+        "tab": "2921f03fc658da85",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "4705f0eadca75a1f",
+        "type": "ui_group",
+        "name": "CARTEL1",
+        "tab": "3baff6148e4badf4",
+        "order": 2,
+        "disp": true,
+        "width": "2",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "2921f03fc658da85",
+        "type": "ui_tab",
+        "name": "Sensores",
+        "icon": "",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "b2cd99e5761de1d3",
+        "type": "debug",
+        "z": "5767f3833f8242d9",
+        "name": "debug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 550,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "03b4c3b82150d2fb",
+        "type": "tcp out",
+        "z": "5767f3833f8242d9",
+        "name": "Conexion TCP",
+        "host": "127.0.0.1",
+        "port": "44444",
+        "beserver": "client",
+        "base64": false,
+        "end": true,
+        "tls": "",
+        "x": 580,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "e441113bb1cc85b8",
+        "type": "ui_button",
+        "z": "5767f3833f8242d9",
+        "name": "Button Sensor UI",
+        "group": "07dc86e5aaace2eb",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Enviar",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "true",
+        "payloadType": "bool",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 330,
+        "y": 160,
+        "wires": [
+            [
+                "b2cd99e5761de1d3",
+                "03b4c3b82150d2fb"
+            ]
+        ]
+    },
+    {
+        "id": "8f9de8e2f0ee0579",
+        "type": "udp in",
+        "z": "601f2a994af2425d",
+        "name": "Conexion UDP",
+        "iface": "",
+        "port": "33333",
+        "ipv": "udp4",
+        "multicast": "false",
+        "group": "",
+        "datatype": "buffer",
+        "x": 440,
+        "y": 200,
+        "wires": [
+            [
+                "85e9a77b35062fea",
+                "6ee4fdb89989cbf3"
+            ]
+        ]
+    },
+    {
+        "id": "85e9a77b35062fea",
+        "type": "debug",
+        "z": "601f2a994af2425d",
+        "name": "debug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 630,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "6ee4fdb89989cbf3",
+        "type": "ui_text",
+        "z": "601f2a994af2425d",
+        "group": "4705f0eadca75a1f",
+        "order": 0,
+        "width": "0",
+        "height": "0",
+        "name": "Text Cartel UI",
+        "label": "var0",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 660,
+        "y": 240,
+        "wires": []
+    }
+]

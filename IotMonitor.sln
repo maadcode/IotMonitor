@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35122.118
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IotServer", "IotServer\IotServer.csproj", "{44037E97-27E6-4870-B9D6-FE0B98C872CC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IotClient", "IotClient\IotClient.csproj", "{A0E6645E-D906-4C49-9F18-F076216AAD29}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{44037E97-27E6-4870-B9D6-FE0B98C872CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44037E97-27E6-4870-B9D6-FE0B98C872CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44037E97-27E6-4870-B9D6-FE0B98C872CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44037E97-27E6-4870-B9D6-FE0B98C872CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0E6645E-D906-4C49-9F18-F076216AAD29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0E6645E-D906-4C49-9F18-F076216AAD29}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0E6645E-D906-4C49-9F18-F076216AAD29}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0E6645E-D906-4C49-9F18-F076216AAD29}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2B7DD1BF-D4AD-457D-AEEC-47790E2B7C7B}
+	EndGlobalSection
+EndGlobal
