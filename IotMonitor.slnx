@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/IotMonitor.Application/IotMonitor.Application.csproj" />
+    <Project Path="src/IotMonitor.ConsoleApp/IotMonitor.ConsoleApp.csproj" />
+    <Project Path="src/IotMonitor.Data/IotMonitor.Data.csproj" />
+    <Project Path="src/IotMonitor.Domain/IotMonitor.Domain.csproj" />
+    <Project Path="src/IotMonitor.Infrastructure/IotMonitor.Infrastructure.csproj" />
+    <Project Path="src/IotMonitor.Presentation/IotMonitor.Presentation.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/IotMonitor.Tests/IotMonitor.Tests.csproj" />
+  </Folder>
+</Solution>

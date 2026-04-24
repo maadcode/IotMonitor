@@ -1,0 +1,155 @@
+{
+	"servers": {
+		"io.github.github/github-mcp-server": {
+			"type": "stdio",
+			"command": "docker",
+			"args": [
+				"run",
+				"-i",
+				"--rm",
+				"-e",
+				"GITHUB_PERSONAL_ACCESS_TOKEN=${input:token}",
+				"ghcr.io/github/github-mcp-server:1.0.2"
+			],
+			"gallery": "https://api.mcp.github.com",
+			"version": "1.0.2"
+		},
+		"io.github.bytebase/dbhub": {
+			"type": "stdio",
+			"command": "npx",
+			"args": [
+				"@bytebase/dbhub@0.21.1"
+			],
+			"env": {
+				"DSN": "${input:DSN}",
+				"DB_TYPE": "${input:DB_TYPE}",
+				"DB_HOST": "${input:DB_HOST}",
+				"DB_PORT": "${input:DB_PORT}",
+				"DB_USER": "${input:DB_USER}",
+				"DB_PASSWORD": "${input:DB_PASSWORD}",
+				"DB_NAME": "${input:DB_NAME}",
+				"TRANSPORT": "${input:TRANSPORT}",
+				"PORT": "${input:PORT}",
+				"ID": "${input:ID}",
+				"SSH_HOST": "${input:SSH_HOST}",
+				"SSH_PORT": "${input:SSH_PORT}",
+				"SSH_USER": "${input:SSH_USER}",
+				"SSH_PASSWORD": "${input:SSH_PASSWORD}",
+				"SSH_KEY": "${input:SSH_KEY}",
+				"SSH_PASSPHRASE": "${input:SSH_PASSPHRASE}"
+			},
+			"gallery": "https://api.mcp.github.com",
+			"version": "0.21.1"
+		},
+		"microsoftdocs/mcp": {
+			"type": "http",
+			"url": "https://learn.microsoft.com/api/mcp",
+			"gallery": "https://api.mcp.github.com",
+			"version": "1.0.0"
+		}
+	},
+	"inputs": [
+		{
+			"id": "token",
+			"type": "promptString",
+			"description": "",
+			"password": true
+		},
+		{
+			"id": "DSN",
+			"type": "promptString",
+			"description": "Database connection string (e.g., postgres://user:pass@host:5432/db)",
+			"password": true
+		},
+		{
+			"id": "DB_TYPE",
+			"type": "promptString",
+			"description": "Database type: postgres, mysql, mariadb, sqlserver, sqlite",
+			"password": false
+		},
+		{
+			"id": "DB_HOST",
+			"type": "promptString",
+			"description": "Database hostname",
+			"password": false
+		},
+		{
+			"id": "DB_PORT",
+			"type": "promptString",
+			"description": "Database port",
+			"password": false
+		},
+		{
+			"id": "DB_USER",
+			"type": "promptString",
+			"description": "Database username",
+			"password": false
+		},
+		{
+			"id": "DB_PASSWORD",
+			"type": "promptString",
+			"description": "Database password",
+			"password": true
+		},
+		{
+			"id": "DB_NAME",
+			"type": "promptString",
+			"description": "Database name or SQLite file path",
+			"password": false
+		},
+		{
+			"id": "TRANSPORT",
+			"type": "promptString",
+			"description": "Transport mode: stdio or http",
+			"password": false
+		},
+		{
+			"id": "PORT",
+			"type": "promptString",
+			"description": "HTTP server port (default: 8080)",
+			"password": false
+		},
+		{
+			"id": "ID",
+			"type": "promptString",
+			"description": "Instance identifier for tool names",
+			"password": false
+		},
+		{
+			"id": "SSH_HOST",
+			"type": "promptString",
+			"description": "SSH server hostname",
+			"password": false
+		},
+		{
+			"id": "SSH_PORT",
+			"type": "promptString",
+			"description": "SSH server port (default: 22)",
+			"password": false
+		},
+		{
+			"id": "SSH_USER",
+			"type": "promptString",
+			"description": "SSH username",
+			"password": false
+		},
+		{
+			"id": "SSH_PASSWORD",
+			"type": "promptString",
+			"description": "SSH password",
+			"password": true
+		},
+		{
+			"id": "SSH_KEY",
+			"type": "promptString",
+			"description": "Path to SSH private key",
+			"password": false
+		},
+		{
+			"id": "SSH_PASSPHRASE",
+			"type": "promptString",
+			"description": "SSH key passphrase",
+			"password": true
+		}
+	]
+}
