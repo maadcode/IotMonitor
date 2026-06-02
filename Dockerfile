@@ -1,5 +1,6 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim AS build
 ARG BUILD_CONFIGURATION=Release
+ARG APP_PROJECT=src/IotMonitor.ConsoleApp/IotMonitor.ConsoleApp.csproj
 
 WORKDIR /src
 
@@ -10,10 +11,10 @@ COPY ["src/IotMonitor.Domain/IotMonitor.Domain.csproj", "src/IotMonitor.Domain/"
 COPY ["src/IotMonitor.Infrastructure/IotMonitor.Infrastructure.csproj", "src/IotMonitor.Infrastructure/"]
 COPY ["src/IotMonitor.Data/IotMonitor.Data.csproj", "src/IotMonitor.Data/"]
 
-RUN dotnet restore "src/IotMonitor.ConsoleApp/IotMonitor.ConsoleApp.csproj"
+RUN dotnet restore "$APP_PROJECT"
 
 COPY . .
-RUN dotnet publish "src/IotMonitor.ConsoleApp/IotMonitor.ConsoleApp.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "$APP_PROJECT" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM mcr.microsoft.com/dotnet/runtime:8.0-bookworm-slim AS final
 WORKDIR /app
@@ -27,4 +28,5 @@ USER $APP_UID
 
 COPY --from=build /app/publish .
 
-ENTRYPOINT ["dotnet", "IotMonitor.ConsoleApp.dll"]
+ENTRYPOINT ["dotnet"]
+CMD ["IotMonitor.ConsoleApp.dll"]
