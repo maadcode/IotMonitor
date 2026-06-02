@@ -1,0 +1,54 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: iotmonitor-sqlserver
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:-DevContainer_Sql_123!}"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/1433' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  nodered:
+    image: nodered/node-red:3.1.10
+    container_name: iotmonitor-nodered
+    restart: unless-stopped
+    ports:
+      - "1880:1880"
+    volumes:
+      - nodered-data:/data
+    environment:
+      TZ: "UTC"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:1880/ > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  iotmonitor-console:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_CONFIGURATION: Release
+        APP_PROJECT: src/IotMonitor.ConsoleApp/IotMonitor.ConsoleApp.csproj
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      nodered:
+        condition: service_healthy
+    stdin_open: true
+    tty: true
+
+volumes:
+  sqlserver-data:
+  nodered-data:

@@ -1,0 +1,27 @@
+{
+  "name": "IotMonitor - .NET 8",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:8.0-jammy",
+  "workspaceFolder": "/workspaces/IotMonitor",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.csharp",
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.csdevkit",
+        "ms-mssql.mssql"
+      ],
+      "settings": {
+        "dotnet.defaultSolutionDirPath": "${workspaceFolder}",
+        "[csharp]": {
+          "editor.formatOnSave": true,
+          "editor.defaultFormatter": "ms-dotnettools.csharp"
+        }
+      }
+    }
+  },
+  "remoteUser": "vscode",
+  "postCreateCommand": "dotnet restore"
+}
