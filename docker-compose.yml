@@ -41,6 +41,8 @@ services:
       args:
         BUILD_CONFIGURATION: Release
         APP_PROJECT: src/IotMonitor.ConsoleApp/IotMonitor.ConsoleApp.csproj
+    environment:
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:-DevContainer_Sql_123!}"
     depends_on:
       sqlserver:
         condition: service_healthy

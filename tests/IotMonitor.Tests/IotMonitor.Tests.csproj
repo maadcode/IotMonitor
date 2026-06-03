@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="MSTest" Version="4.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.7" />
   </ItemGroup>
 
   <ItemGroup>
@@ -18,6 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\IotMonitor.Domain\IotMonitor.Domain.csproj" />
     <ProjectReference Include="..\..\src\IotMonitor.Application\IotMonitor.Application.csproj" />
+    <ProjectReference Include="..\..\src\IotMonitor.Data\IotMonitor.Data.csproj" />
   </ItemGroup>
 
 </Project>
