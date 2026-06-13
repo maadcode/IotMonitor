@@ -14,6 +14,7 @@ public class IotMonitorDbContext : DbContext
     public DbSet<DeviceEntity> Devices => Set<DeviceEntity>();
     public DbSet<ModbusDeviceEntity> ModbusDevices => Set<ModbusDeviceEntity>();
     public DbSet<HttpDeviceEntity> HttpDevices => Set<HttpDeviceEntity>();
+    public DbSet<UdpDeviceEntity> UdpDevices => Set<UdpDeviceEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
