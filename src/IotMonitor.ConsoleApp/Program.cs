@@ -20,13 +20,14 @@ builder.Logging.AddSimpleConsole(options =>
 });
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-    ?? "Server=localhost;Database=IotMonitor;User Id=sa;Password=DevContainer_Sql_123!;TrustServerCertificate=True";
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 builder.Services.AddDbContext<IotMonitorDbContext>(options =>
     options.UseSqlServer(connectionString, b => b.MigrationsAssembly("IotMonitor.Data")));
 
 builder.Services.AddScoped<IDeviceRepository, DeviceRepository>();
-builder.Services.AddSingleton<IDeviceOrchestrator, InMemoryDeviceOrchestrator>();
+builder.Services.AddSingleton<IDeviceOrchestrator, DeviceOrchestrator>();
+builder.Services.AddHostedService<DeviceWorkerService>();
 builder.Services.AddSingleton<ConsoleShell>();
 
 using var host = builder.Build();

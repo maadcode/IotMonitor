@@ -2,7 +2,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\IotMonitor.Domain\IotMonitor.Domain.csproj" />
-    <ProjectReference Include="..\IotMonitor.Application\IotMonitor.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

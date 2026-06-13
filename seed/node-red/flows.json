@@ -1,0 +1,100 @@
+[
+    {
+        "id": "e305608518770c32",
+        "type": "tab",
+        "label": "IoT Simulation",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "http-snapshot",
+        "type": "http in",
+        "z": "e305608518770c32",
+        "name": "Camera Snapshot API",
+        "url": "/camera/snapshot",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 150,
+        "y": 80,
+        "wires": [
+            [
+                "http-response"
+            ]
+        ]
+    },
+    {
+        "id": "http-response",
+        "type": "http response",
+        "z": "e305608518770c32",
+        "name": "Return Image Placeholder",
+        "statusCode": "200",
+        "headers": {
+            "Content-Type": "image/png"
+        },
+        "x": 420,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "modbus-server",
+        "type": "modbus-server",
+        "z": "e305608518770c32",
+        "name": "Industrial PLC Simulator",
+        "logEnabled": false,
+        "hostname": "0.0.0.0",
+        "serverPort": "1502",
+        "responseDelay": 100,
+        "delayUnit": "ms",
+        "coilsBufferSize": 10000,
+        "holdingRegistersBufferSize": 10000,
+        "inputRegistersBufferSize": 10000,
+        "discreteInputsBufferSize": 10000,
+        "showErrors": true,
+        "x": 160,
+        "y": 180,
+        "wires": [
+            [],
+            [],
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "udp-in",
+        "type": "udp in",
+        "z": "e305608518770c32",
+        "name": "LED Sign Receiver",
+        "iface": "",
+        "port": "9999",
+        "ipv": "udp4",
+        "multicast": "false",
+        "group": "",
+        "datatype": "utf8",
+        "x": 130,
+        "y": 280,
+        "wires": [
+            [
+                "debug-udp"
+            ]
+        ]
+    },
+    {
+        "id": "debug-udp",
+        "type": "debug",
+        "z": "e305608518770c32",
+        "name": "Log UDP Message",
+        "active": true,
+        "tosidebar": true,
+        "console": true,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 400,
+        "y": 280,
+        "wires": []
+    }
+]
