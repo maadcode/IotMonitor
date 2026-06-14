@@ -8,6 +8,11 @@ namespace IotMonitor.Application.Abstractions;
 public interface IDeviceOrchestrator
 {
     /// <summary>
+    /// Event fired when a device status changes.
+    /// </summary>
+    event EventHandler<DeviceStatusChangedEventArgs> StatusChanged;
+
+    /// <summary>
     /// Gets the current dashboard snapshot.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
@@ -20,4 +25,12 @@ public interface IDeviceOrchestrator
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
     /// <returns>Updated collection of device snapshots.</returns>
     Task<IReadOnlyCollection<DeviceSnapshot>> TestAllConnectionsAsync(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Triggers a manual reconnection for a specific device.
+    /// </summary>
+    /// <param name="deviceId">The unique identifier of the device.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>A completion task.</returns>
+    Task ReconnectDeviceAsync(Guid deviceId, CancellationToken cancellationToken);
 }

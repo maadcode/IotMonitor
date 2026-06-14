@@ -9,13 +9,14 @@ services:
     ports:
       - "1433:1433"
     volumes:
-      - sqlserver-data:/var/opt/mssql
+      - mssql-data:/var/opt/mssql
+      - ./seed/sql:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/1433' || exit 1"]
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P '${MSSQL_SA_PASSWORD:-DevContainer_Sql_123!}' -C -Q 'SELECT 1' || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 20s
+      start_period: 30s
 
   nodered:
     image: nodered/node-red:3.1.10
@@ -23,8 +24,11 @@ services:
     restart: unless-stopped
     ports:
       - "1880:1880"
+      - "1502:1502"
+      - "9999:9999/udp"
     volumes:
       - nodered-data:/data
+      - ./seed/node-red/flows.json:/data/flows.json:ro
     environment:
       TZ: "UTC"
     healthcheck:
@@ -46,9 +50,11 @@ services:
         condition: service_healthy
       nodered:
         condition: service_healthy
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=IotMonitor;User Id=sa;Password=${MSSQL_SA_PASSWORD:-DevContainer_Sql_123!};TrustServerCertificate=True
     stdin_open: true
     tty: true
 
 volumes:
-  sqlserver-data:
+  mssql-data:
   nodered-data:

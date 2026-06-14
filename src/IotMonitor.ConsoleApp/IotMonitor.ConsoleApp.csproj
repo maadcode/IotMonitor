@@ -1,6 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="appsettings.Development.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\IotMonitor.Presentation\IotMonitor.Presentation.csproj" />
     <ProjectReference Include="..\IotMonitor.Infrastructure\IotMonitor.Infrastructure.csproj" />
     <ProjectReference Include="..\IotMonitor.Data\IotMonitor.Data.csproj" />
