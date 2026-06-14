@@ -3,7 +3,11 @@
   "image": "mcr.microsoft.com/devcontainers/dotnet:8.0-jammy",
   "workspaceFolder": "/workspaces/IotMonitor",
   "features": {
-    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "24"
+    }
   },
   "customizations": {
     "vscode": {
