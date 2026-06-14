@@ -36,45 +36,34 @@ public sealed class DeviceOrchestrator : IDeviceOrchestrator
     {
         await EnsureInitializedAsync(cancellationToken);
 
-        // For now, this still simulates or delegates to the specific workers.
-        // In Phase 4, the workers will update the state automatically for Always-On.
-        // For On-Demand, we might trigger a one-off test here.
-        
-        foreach (var deviceId in _deviceStates.Keys)
-        {
-            // Simple simulation for now, to be replaced by actual protocol calls or worker integration
-            await UpdateDeviceStatusInternalAsync(deviceId, DeviceStatus.Ready, cancellationToken);
-        }
-
+        // AlwaysOn devices are maintained by DeviceWorkerService runners in real time.
+        // This method just returns the current snapshot so the console can refresh.
         return _deviceStates.Values.ToList().AsReadOnly();
     }
 
     /// <inheritdoc />
-    public async Task ReconnectDeviceAsync(Guid deviceId, CancellationToken cancellationToken)
+    public Task ReconnectDeviceAsync(Guid deviceId, CancellationToken cancellationToken)
     {
-        if (_deviceStates.TryGetValue(deviceId, out var snapshot))
-        {
-            // Here we would signal the specific worker to restart the socket.
-            // For now, we just update the status to show it's happening.
-            await UpdateDeviceStatusInternalAsync(deviceId, DeviceStatus.Connected, cancellationToken);
-        }
+        // AlwaysOnDeviceRunner reconnects automatically after any connection drop.
+        // Setting Unknown signals the UI that a reconnect is in progress.
+        return UpdateDeviceStatusInternalAsync(deviceId, DeviceStatus.Unknown, cancellationToken);
     }
 
     /// <summary>
     /// Updates the status of a device and fires the StatusChanged event if it changed.
     /// </summary>
-    public async Task UpdateDeviceStatusInternalAsync(Guid deviceId, DeviceStatus newStatus, CancellationToken cancellationToken)
+    public Task UpdateDeviceStatusInternalAsync(Guid deviceId, DeviceStatus newStatus, CancellationToken cancellationToken)
     {
         if (_deviceStates.TryGetValue(deviceId, out var oldSnapshot))
         {
             if (oldSnapshot.Status != newStatus)
             {
-                var newSnapshot = oldSnapshot with 
-                { 
-                    Status = newStatus, 
-                    LastConnectionUtc = newStatus is DeviceStatus.Connected or DeviceStatus.Ready 
-                        ? DateTimeOffset.UtcNow 
-                        : oldSnapshot.LastConnectionUtc 
+                var newSnapshot = oldSnapshot with
+                {
+                    Status = newStatus,
+                    LastConnectionUtc = newStatus is DeviceStatus.Connected or DeviceStatus.Ready
+                        ? DateTimeOffset.UtcNow
+                        : oldSnapshot.LastConnectionUtc
                 };
 
                 if (_deviceStates.TryUpdate(deviceId, newSnapshot, oldSnapshot))
@@ -83,6 +72,8 @@ public sealed class DeviceOrchestrator : IDeviceOrchestrator
                 }
             }
         }
+
+        return Task.CompletedTask;
     }
 
     private async Task EnsureInitializedAsync(CancellationToken cancellationToken)
@@ -107,7 +98,7 @@ public sealed class DeviceOrchestrator : IDeviceOrchestrator
                     device.DeviceType.Lifecycle,
                     DeviceStatus.Unknown,
                     null);
-                
+
                 _deviceStates.TryAdd(device.Id, snapshot);
             }
 

@@ -8,7 +8,9 @@ using Microsoft.Extensions.Logging;
 namespace IotMonitor.Application.Services;
 
 /// <summary>
-/// Background service that manages Always-On device workers and polling.
+/// Background service that manages persistent TCP connections for AlwaysOn devices.
+/// One <see cref="AlwaysOnDeviceRunner"/> is started per device and runs for the
+/// lifetime of the host, reconnecting automatically on failure.
 /// </summary>
 public sealed class DeviceWorkerService : BackgroundService
 {
@@ -28,49 +30,94 @@ public sealed class DeviceWorkerService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Device Worker Service is starting.");
+        _logger.LogInformation("Device Worker Service starting.");
 
-        while (!stoppingToken.IsCancellationRequested)
+        if (_orchestrator is not DeviceOrchestrator concreteOrchestrator)
         {
-            _logger.LogDebug("Worker running at: {time}", DateTimeOffset.Now);
-
-            try
-            {
-                await PollAlwaysOnDevicesAsync(stoppingToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred during device polling.");
-            }
-
-            await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+            _logger.LogError("Orchestrator is not a DeviceOrchestrator. Worker cannot start.");
+            return;
         }
 
-        _logger.LogInformation("Device Worker Service is stopping.");
-    }
-
-    private async Task PollAlwaysOnDevicesAsync(CancellationToken ct)
-    {
         using var scope = _scopeFactory.CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IDeviceRepository>();
-        
-        var allDevices = await repository.GetAllDevicesAsync(ct);
-        var alwaysOnDevices = allDevices.Where(d => d.DeviceType.Lifecycle == ConnectionLifecycle.AlwaysOn);
 
-        foreach (var device in alwaysOnDevices)
+        var allDevices = (await repository.GetAllDevicesAsync(stoppingToken)).ToList();
+
+        var alwaysOnDevices = allDevices
+            .Where(d => d.DeviceType.Lifecycle == ConnectionLifecycle.AlwaysOn)
+            .ToList();
+
+        var udpDevices = allDevices
+            .Where(d => d.DeviceType.Lifecycle == ConnectionLifecycle.FireAndForget)
+            .ToList();
+
+        var httpDevices = allDevices
+            .Where(d => d.DeviceType.Lifecycle == ConnectionLifecycle.OnDemand)
+            .ToList();
+
+        if (alwaysOnDevices.Count == 0 && udpDevices.Count == 0 && httpDevices.Count == 0)
         {
-            // In a real implementation, we would check if a specific worker for this device exists.
-            // For now, we simulate the connectivity test.
-            
-            // To update the orchestrator, we need to cast or have a specific method.
-            if (_orchestrator is DeviceOrchestrator concreteOrchestrator)
-            {
-                // Simulate a random status for Always-On devices for now
-                var random = new Random();
-                var status = random.Next(0, 10) > 2 ? DeviceStatus.Connected : DeviceStatus.Disconnected;
-                
-                await concreteOrchestrator.UpdateDeviceStatusInternalAsync(device.Id, status, ct);
-            }
+            _logger.LogWarning("No AlwaysOn, UDP or HTTP devices found. Worker is idle.");
+            return;
         }
+
+        // Ensure the orchestrator snapshot dictionary is populated before runners start updating it
+        await concreteOrchestrator.GetDashboardSnapshotAsync(stoppingToken);
+
+        var allTasks = new List<Task>();
+
+        if (alwaysOnDevices.Count > 0)
+        {
+            _logger.LogInformation("Starting {Count} AlwaysOn device runner(s).", alwaysOnDevices.Count);
+
+            allTasks.AddRange(alwaysOnDevices.Select(device =>
+            {
+                var runner = new AlwaysOnDeviceRunner(
+                    device.Id,
+                    device.IpAddress,
+                    device.Port,
+                    concreteOrchestrator,
+                    _logger);
+
+                return runner.RunAsync(stoppingToken);
+            }));
+        }
+
+        if (udpDevices.Count > 0)
+        {
+            _logger.LogInformation("Starting {Count} UDP ping runner(s).", udpDevices.Count);
+
+            allTasks.AddRange(udpDevices.Select(device =>
+            {
+                var runner = new UdpPingRunner(
+                    device.Id,
+                    device.IpAddress,
+                    concreteOrchestrator,
+                    _logger);
+
+                return runner.RunAsync(stoppingToken);
+            }));
+        }
+
+        if (httpDevices.Count > 0)
+        {
+            _logger.LogInformation("Starting {Count} HTTP ping runner(s).", httpDevices.Count);
+
+            allTasks.AddRange(httpDevices.Select(device =>
+            {
+                var runner = new HttpPingRunner(
+                    device.Id,
+                    device.IpAddress,
+                    device.Port,
+                    concreteOrchestrator,
+                    _logger);
+
+                return runner.RunAsync(stoppingToken);
+            }));
+        }
+
+        await Task.WhenAll(allTasks);
+
+        _logger.LogInformation("Device Worker Service stopped.");
     }
 }

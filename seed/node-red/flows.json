@@ -1,100 +1,346 @@
 [
     {
-        "id": "e305608518770c32",
+        "id": "4eeaceded1074a4b",
         "type": "tab",
-        "label": "IoT Simulation",
+        "label": "TCP Multi-Cliente",
         "disabled": false,
         "info": ""
     },
     {
-        "id": "http-snapshot",
+        "id": "udp-server-flow",
+        "type": "tab",
+        "label": "UDP Cartel LED",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "b098c1566d82b014",
+        "type": "tab",
+        "label": "HTTP Camera",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "0b19c194c5e56960",
+        "type": "tcp in",
+        "z": "4eeaceded1074a4b",
+        "name": "Servidor TCP",
+        "server": "server",
+        "host": "",
+        "port": "5001",
+        "datamode": "stream",
+        "datatype": "buffer",
+        "newline": "",
+        "topic": "",
+        "trim": false,
+        "base64": false,
+        "tls": "",
+        "x": 160,
+        "y": 140,
+        "wires": [
+            [
+                "3c4f1840d8b443d5",
+                "44c9d7856832f654"
+            ]
+        ]
+    },
+    {
+        "id": "3c4f1840d8b443d5",
+        "type": "function",
+        "z": "4eeaceded1074a4b",
+        "name": "Gestionar Pool",
+        "func": "var clients = flow.get(\"tcp_clients\") || {};\n\nif (msg._session) {\n    var id = msg._session.id;\n    var isEmpty = !msg.payload ||\n                  (Buffer.isBuffer(msg.payload) && msg.payload.length === 0) ||\n                  (typeof msg.payload === 'string' && msg.payload.length === 0);\n\n    if (isEmpty) {\n        if (clients[id]) {\n            delete clients[id];\n            node.warn(\"[Pool] Cliente desconectado: \" + id);\n        }\n    } else {\n        var isNew = !clients[id];\n        clients[id] = msg._session;\n        if (isNew) node.warn(\"[Pool] Cliente registrado: \" + id);\n    }\n\n    flow.set(\"tcp_clients\", clients);\n    var count = Object.keys(clients).length;\n    node.status({fill: count > 0 ? \"green\" : \"red\", shape:\"dot\", text:\"Clientes: \" + count});\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "flow.set(\"tcp_clients\", {});\nnode.status({fill:\"grey\",shape:\"ring\",text:\"Pool limpio\"});\nnode.warn(\"[Pool] Inicializado — sesiones anteriores descartadas\");",
+        "finalize": "flow.set(\"tcp_clients\", {});\nnode.warn(\"[Pool] Finalizado — sesiones descartadas\");",
+        "libs": [],
+        "x": 360,
+        "y": 140,
+        "wires": [
+            [
+                "44c9d7856832f654"
+            ]
+        ]
+    },
+    {
+        "id": "317b1ed14bb030ab",
+        "type": "inject",
+        "z": "4eeaceded1074a4b",
+        "name": "Encender sensor",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "true",
+        "payloadType": "bool",
+        "x": 160,
+        "y": 240,
+        "wires": [
+            [
+                "e88237be19a9c1ec"
+            ]
+        ]
+    },
+    {
+        "id": "e88237be19a9c1ec",
+        "type": "function",
+        "z": "4eeaceded1074a4b",
+        "name": "Broadcast",
+        "func": "var clients = flow.get(\"tcp_clients\") || {};\nvar data = Buffer.from([msg.payload ? 1 : 0]);\nvar msgs = [];\n\nfor (var id in clients) {\n    msgs.push({ _session: clients[id], payload: data });\n}\nreturn [msgs];",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 240,
+        "wires": [
+            [
+                "f2461c1e0f0bf26e",
+                "abc1a8cb0931e6dd"
+            ]
+        ]
+    },
+    {
+        "id": "f2461c1e0f0bf26e",
+        "type": "tcp out",
+        "z": "4eeaceded1074a4b",
+        "name": "Enviar a Clientes",
+        "host": "",
+        "port": "",
+        "beserver": "reply",
+        "base64": false,
+        "end": false,
+        "tls": "",
+        "x": 560,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "44c9d7856832f654",
+        "type": "debug",
+        "z": "4eeaceded1074a4b",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 620,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "abc1a8cb0931e6dd",
+        "type": "debug",
+        "z": "4eeaceded1074a4b",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 660,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "361de322da5b6d86",
+        "type": "inject",
+        "z": "4eeaceded1074a4b",
+        "name": "Apagar sensor",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "false",
+        "payloadType": "bool",
+        "x": 160,
+        "y": 300,
+        "wires": [
+            [
+                "e88237be19a9c1ec"
+            ]
+        ]
+    },
+    {
+        "id": "adc2a8814da02101",
+        "type": "inject",
+        "z": "4eeaceded1074a4b",
+        "name": "Reset Pool",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "str",
+        "x": 160,
+        "y": 380,
+        "wires": [
+            [
+                "a83de8b27f3ff6c2"
+            ]
+        ]
+    },
+    {
+        "id": "a83de8b27f3ff6c2",
+        "type": "function",
+        "z": "4eeaceded1074a4b",
+        "name": "Limpiar Pool",
+        "func": "flow.set(\"tcp_clients\", {});\nnode.warn(\"[Pool] Reset manual — todas las sesiones descartadas\");\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 380,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "udp-in-node",
+        "type": "udp in",
+        "z": "udp-server-flow",
+        "name": "Servidor UDP",
+        "iface": "",
+        "port": "5002",
+        "multicast": "false",
+        "group": "",
+        "datatype": "utf8",
+        "x": 140,
+        "y": 140,
+        "wires": [
+            [
+                "log-text"
+            ]
+        ]
+    },
+    {
+        "id": "log-text",
+        "type": "debug",
+        "z": "udp-server-flow",
+        "name": "Imprimir Mensaje",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 370,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "http-snapshot-file",
         "type": "http in",
-        "z": "e305608518770c32",
-        "name": "Camera Snapshot API",
-        "url": "/camera/snapshot",
+        "z": "b098c1566d82b014",
+        "name": "API Snapshot",
+        "url": "/snapshot",
         "method": "get",
         "upload": false,
         "swaggerDoc": "",
-        "x": 150,
-        "y": 80,
+        "x": 190,
+        "y": 160,
         "wires": [
             [
-                "http-response"
+                "read-file",
+                "861ffee4ab59d9b7"
+            ]
+        ]
+    },
+    {
+        "id": "read-file",
+        "type": "file in",
+        "z": "b098c1566d82b014",
+        "name": "Leer foto.jpg",
+        "filename": "/data/foto.jpg",
+        "filenameType": "str",
+        "format": "buffer",
+        "allProps": false,
+        "x": 390,
+        "y": 160,
+        "wires": [
+            [
+                "set-headers"
+            ]
+        ]
+    },
+    {
+        "id": "set-headers",
+        "type": "change",
+        "z": "b098c1566d82b014",
+        "name": "Headers JPEG",
+        "rules": [
+            {
+                "t": "set",
+                "p": "headers",
+                "pt": "msg",
+                "to": "{\"Content-Type\": \"image/jpeg\"}",
+                "tot": "json"
+            }
+        ],
+        "x": 600,
+        "y": 160,
+        "wires": [
+            [
+                "http-response",
+                "861ffee4ab59d9b7"
             ]
         ]
     },
     {
         "id": "http-response",
         "type": "http response",
-        "z": "e305608518770c32",
-        "name": "Return Image Placeholder",
-        "statusCode": "200",
-        "headers": {
-            "Content-Type": "image/png"
-        },
-        "x": 420,
-        "y": 80,
+        "z": "b098c1566d82b014",
+        "name": "Enviar respose",
+        "statusCode": "",
+        "headers": {},
+        "x": 820,
+        "y": 160,
         "wires": []
     },
     {
-        "id": "modbus-server",
-        "type": "modbus-server",
-        "z": "e305608518770c32",
-        "name": "Industrial PLC Simulator",
-        "logEnabled": false,
-        "hostname": "0.0.0.0",
-        "serverPort": "1502",
-        "responseDelay": 100,
-        "delayUnit": "ms",
-        "coilsBufferSize": 10000,
-        "holdingRegistersBufferSize": 10000,
-        "inputRegistersBufferSize": 10000,
-        "discreteInputsBufferSize": 10000,
-        "showErrors": true,
-        "x": 160,
-        "y": 180,
-        "wires": [
-            [],
-            [],
-            [],
-            [],
-            []
-        ]
-    },
-    {
-        "id": "udp-in",
-        "type": "udp in",
-        "z": "e305608518770c32",
-        "name": "LED Sign Receiver",
-        "iface": "",
-        "port": "9999",
-        "ipv": "udp4",
-        "multicast": "false",
-        "group": "",
-        "datatype": "utf8",
-        "x": 130,
-        "y": 280,
-        "wires": [
-            [
-                "debug-udp"
-            ]
-        ]
-    },
-    {
-        "id": "debug-udp",
+        "id": "861ffee4ab59d9b7",
         "type": "debug",
-        "z": "e305608518770c32",
-        "name": "Log UDP Message",
+        "z": "b098c1566d82b014",
+        "name": "Log",
         "active": true,
         "tosidebar": true,
-        "console": true,
+        "console": false,
         "tostatus": false,
         "complete": "payload",
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 400,
-        "y": 280,
+        "x": 670,
+        "y": 340,
         "wires": []
     }
 ]
