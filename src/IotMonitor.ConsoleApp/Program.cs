@@ -38,11 +38,11 @@ builder.Services.AddSingleton<ConsoleShell>();
 
 using var host = builder.Build();
 
-// Start all IHostedServices (including DeviceWorkerService / TCP runners)
+
 await host.StartAsync();
 
 var shell = host.Services.GetRequiredService<ConsoleShell>();
 await shell.RunAsync(CancellationToken.None).ConfigureAwait(false);
 
-// Gracefully stop all background services when the user exits the shell
+
 await host.StopAsync();

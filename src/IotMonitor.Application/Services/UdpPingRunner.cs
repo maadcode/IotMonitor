@@ -5,11 +5,11 @@ using Microsoft.Extensions.Logging;
 
 namespace IotMonitor.Application.Services;
 
-/// <summary>
-/// Periodically checks reachability of a UDP device by resolving its hostname via DNS.
-/// ICMP ping requires elevated privileges or the system ping binary, neither of which
-/// are guaranteed in a container; DNS resolution is a container-friendly alternative.
-/// </summary>
+
+
+
+
+
 internal sealed class UdpPingRunner
 {
     private readonly Guid _deviceId;

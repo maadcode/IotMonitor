@@ -8,10 +8,10 @@ using Microsoft.Extensions.Logging;
 
 namespace IotMonitor.Infrastructure.Services;
 
-/// <summary>
-/// Captures a photo from an HTTP-based device and stores it under the configured base path.
-/// Path format: {BasePath}/{yyyyMMdd}/{DeviceId}-{yyyyMMdd}-{HHmmss}.jpg
-/// </summary>
+
+
+
+
 public sealed class PhotoCaptureService : IPhotoCaptureService
 {
     private readonly IServiceScopeFactory _scopeFactory;
@@ -29,7 +29,7 @@ public sealed class PhotoCaptureService : IPhotoCaptureService
             ?? throw new InvalidOperationException("PhotoStorage:BasePath is not configured.");
     }
 
-    /// <inheritdoc />
+    
     public async Task<string> CapturePhotoAsync(Guid deviceId, CancellationToken cancellationToken)
     {
         using var scope = _scopeFactory.CreateScope();

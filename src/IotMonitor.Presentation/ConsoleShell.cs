@@ -6,9 +6,9 @@ using Spectre.Console;
 
 namespace IotMonitor.Presentation;
 
-/// <summary>
-/// Renders the tactical console and routes user actions.
-/// </summary>
+
+
+
 public sealed class ConsoleShell(
     IDeviceOrchestrator orchestrator, 
     IUdpDeviceSender udpSender, 
@@ -18,11 +18,11 @@ public sealed class ConsoleShell(
 {
     private Table _dashboardTable = null!;
 
-    /// <summary>
-    /// Runs the shell loop until the user exits.
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token for the session.</param>
-    /// <returns>A completion task.</returns>
+    
+    
+    
+    
+    
     public async Task RunAsync(CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(orchestrator);
@@ -30,7 +30,7 @@ public sealed class ConsoleShell(
         var snapshot = await orchestrator.GetDashboardSnapshotAsync(cancellationToken).ConfigureAwait(false);
         _dashboardTable = CreateDashboardTable(snapshot);
 
-        // Subscribe to state changes to update the table object
+        
         orchestrator.StatusChanged += async (s, e) =>
         {
             var updatedSnapshot = await orchestrator.GetDashboardSnapshotAsync(cancellationToken).ConfigureAwait(false);
@@ -39,7 +39,7 @@ public sealed class ConsoleShell(
 
         var keepRunning = true;
         
-        // Main Loop: We render the dashboard and then show the interactive menu.
+        
         while (keepRunning && !cancellationToken.IsCancellationRequested)
         {
             RenderStaticDashboard();

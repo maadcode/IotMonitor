@@ -5,10 +5,10 @@ using Microsoft.Extensions.Logging;
 
 namespace IotMonitor.Application.Services;
 
-/// <summary>
-/// Maintains a persistent TCP connection for a single AlwaysOn device,
-/// reads incoming bytes and maps them to <see cref="DeviceStatus"/>.
-/// </summary>
+
+
+
+
 internal sealed class AlwaysOnDeviceRunner
 {
     private readonly Guid _deviceId;
@@ -33,15 +33,15 @@ internal sealed class AlwaysOnDeviceRunner
         _logger = logger;
     }
 
-    /// <summary>
-    /// Connects, reads bytes in a loop, and reconnects automatically on failure.
-    /// Runs until <paramref name="ct"/> is cancelled.
-    /// <para>
-    /// Byte protocol (matches Node-RED broadcast-func):
-    /// <c>0x01</c> = sensor ON  → <see cref="DeviceStatus.Connected"/><br/>
-    /// <c>0x00</c> = sensor OFF → <see cref="DeviceStatus.Disconnected"/>
-    /// </para>
-    /// </summary>
+    
+    
+    
+    
+    
+    
+    
+    
+    
     public async Task RunAsync(CancellationToken ct)
     {
         _logger.LogInformation(
@@ -51,9 +51,9 @@ internal sealed class AlwaysOnDeviceRunner
         {
             try
             {
-                // Resolve the hostname to an IPv4 address explicitly.
-                // Using the default TcpClient() (dual-stack) on Linux throws
-                // PlatformNotSupportedException after any failed connect attempt.
+                
+                
+                
                 var addresses = await Dns.GetHostAddressesAsync(
                     _ipAddress, AddressFamily.InterNetwork, ct);
 
@@ -70,10 +70,10 @@ internal sealed class AlwaysOnDeviceRunner
                 _logger.LogInformation(
                     "[TCP] Device {Id} → resolved '{Host}' to {IP}", _deviceId, _ipAddress, resolvedIp);
 
-                // Force IPv4 to avoid dual-stack issues on Linux
+                
                 using var client = new TcpClient(AddressFamily.InterNetwork);
 
-                // Enable OS-level keep-alive to detect silent network drops
+                
                 client.Client.SetSocketOption(
                     SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
 
@@ -86,15 +86,15 @@ internal sealed class AlwaysOnDeviceRunner
                     "[TCP] Device {Id} → CONNECTED to {IP}:{Port} (LocalEndPoint: {Local})",
                     _deviceId, _ipAddress, _port, client.Client.LocalEndPoint);
 
-                // TCP handshake done — sensor state is unknown until Node-RED broadcasts.
+                
                 await _orchestrator.UpdateDeviceStatusInternalAsync(
                     _deviceId, DeviceStatus.Ready, ct);
 
                 using var stream = client.GetStream();
 
-                // Node-RED TCP In only captures _session when the CLIENT sends data.
-                // Send a single registration byte (0x00) so Node-RED stores our session
-                // in the tcp_clients pool and future broadcasts reach us.
+                
+                
+                
                 await stream.WriteAsync(new byte[] { 0x00 }, ct);
                 _logger.LogInformation(
                     "[TCP] Device {Id} → sent registration byte — waiting for sensor state broadcasts…", _deviceId);
@@ -149,7 +149,7 @@ internal sealed class AlwaysOnDeviceRunner
                     _deviceId, ex.GetType().Name, ex.Message, ReconnectDelay.TotalSeconds);
             }
 
-            // Mark as unknown while waiting to reconnect
+            
             await _orchestrator.UpdateDeviceStatusInternalAsync(
                 _deviceId, DeviceStatus.Unknown, CancellationToken.None);
 

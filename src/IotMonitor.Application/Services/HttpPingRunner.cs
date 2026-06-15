@@ -3,10 +3,10 @@ using Microsoft.Extensions.Logging;
 
 namespace IotMonitor.Application.Services;
 
-/// <summary>
-/// Periodically checks reachability of an HTTP device by sending a HEAD request.
-/// Updates the orchestrator status so the dashboard reflects the current camera state.
-/// </summary>
+
+
+
+
 internal sealed class HttpPingRunner
 {
     private readonly Guid _deviceId;

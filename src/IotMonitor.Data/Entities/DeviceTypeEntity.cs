@@ -8,6 +8,6 @@ public class DeviceTypeEntity
     public string Name { get; set; } = null!;
     public ConnectionLifecycle Lifecycle { get; set; }
 
-    // Navigation
+    
     public virtual ICollection<DeviceEntity> Devices { get; set; } = new HashSet<DeviceEntity>();
 }

@@ -7,10 +7,10 @@ using Microsoft.Extensions.Logging;
 
 namespace IotMonitor.Infrastructure.Services;
 
-/// <summary>
-/// Sends a fire-and-forget UDP message to a device loaded from the repository.
-/// Opens a socket, sends the message, then immediately closes — no response is awaited.
-/// </summary>
+
+
+
+
 public sealed class UdpDeviceSender : IUdpDeviceSender
 {
     private readonly IServiceScopeFactory _scopeFactory;
@@ -22,7 +22,7 @@ public sealed class UdpDeviceSender : IUdpDeviceSender
         _logger = logger;
     }
 
-    /// <inheritdoc />
+    
     public async Task SendToDeviceAsync(Guid deviceId, string message, CancellationToken cancellationToken)
     {
         using var scope = _scopeFactory.CreateScope();

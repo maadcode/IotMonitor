@@ -8,9 +8,9 @@ using Microsoft.Extensions.Logging;
 
 namespace IotMonitor.Infrastructure.Devices;
 
-/// <summary>
-/// Protocol handler for UDP-based devices (e.g., dynamic message signs).
-/// </summary>
+
+
+
 public sealed class UdpDevice : DeviceBase, IUdpMessenger
 {
     private readonly ILogger<UdpDevice> _logger;
@@ -28,11 +28,11 @@ public sealed class UdpDevice : DeviceBase, IUdpMessenger
         _logger = logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<UdpDevice>.Instance;
     }
 
-    /// <inheritdoc />
-    /// <remarks>
-    /// UDP is connectionless, so a socket "connect" always succeeds locally.
-    /// DNS resolution is used instead — it works without elevated privileges in containers.
-    /// </remarks>
+    
+    
+    
+    
+    
     public override async Task<bool> TestConnectionAsync(CancellationToken cancellationToken)
     {
         try
@@ -59,11 +59,11 @@ public sealed class UdpDevice : DeviceBase, IUdpMessenger
         }
     }
 
-    /// <inheritdoc />
-    /// <remarks>
-    /// Fire-and-forget: opens the socket, sends the datagram, closes immediately.
-    /// No response is awaited.
-    /// </remarks>
+    
+    
+    
+    
+    
     public async Task SendMessageAsync(string message, CancellationToken cancellationToken)
     {
         _logger.LogInformation(

@@ -14,7 +14,7 @@ public class DeviceTypeConfiguration : IEntityTypeConfiguration<DeviceTypeEntity
         builder.Property(e => e.Code).HasMaxLength(50);
         builder.Property(e => e.Name).IsRequired().HasMaxLength(100);
 
-        // Seed data
+        
         builder.HasData(
             new DeviceTypeEntity { Code = "SENSOR_MODBUS", Name = "Sensor Modbus TCP", Lifecycle = Domain.Enums.ConnectionLifecycle.AlwaysOn },
             new DeviceTypeEntity { Code = "CAMARA_HTTP", Name = "Cámara HTTP", Lifecycle = Domain.Enums.ConnectionLifecycle.OnDemand },

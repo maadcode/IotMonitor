@@ -7,11 +7,11 @@ using Microsoft.Extensions.Logging;
 
 namespace IotMonitor.Application.Services;
 
-/// <summary>
-/// Background service that manages persistent TCP connections for AlwaysOn devices.
-/// One <see cref="AlwaysOnDeviceRunner"/> is started per device and runs for the
-/// lifetime of the host, reconnecting automatically on failure.
-/// </summary>
+
+
+
+
+
 public sealed class DeviceWorkerService : BackgroundService
 {
     private readonly ILogger<DeviceWorkerService> _logger;
@@ -61,7 +61,7 @@ public sealed class DeviceWorkerService : BackgroundService
             return;
         }
 
-        // Ensure the orchestrator snapshot dictionary is populated before runners start updating it
+        
         await concreteOrchestrator.GetDashboardSnapshotAsync(stoppingToken);
 
         var allTasks = new List<Task>();

@@ -6,9 +6,9 @@ using NModbus;
 
 namespace IotMonitor.Infrastructure.Devices;
 
-/// <summary>
-/// Protocol handler for Modbus TCP devices.
-/// </summary>
+
+
+
 public sealed class ModbusDevice : DeviceBase, IAccessController, ILightController
 {
     private readonly byte _unitId;
@@ -29,7 +29,7 @@ public sealed class ModbusDevice : DeviceBase, IAccessController, ILightControll
         _primaryCoil = primaryCoil;
     }
 
-    /// <inheritdoc />
+    
     public override async Task<bool> TestConnectionAsync(CancellationToken cancellationToken)
     {
         try
@@ -37,7 +37,7 @@ public sealed class ModbusDevice : DeviceBase, IAccessController, ILightControll
             using var client = new TcpClient();
             var connectTask = client.ConnectAsync(IpAddress, Port, cancellationToken);
             
-            // Use a short timeout for the connection test
+            
             if (await Task.WhenAny(connectTask.AsTask(), Task.Delay(2000, cancellationToken)) != connectTask.AsTask())
             {
                 return false;
@@ -47,7 +47,7 @@ public sealed class ModbusDevice : DeviceBase, IAccessController, ILightControll
             var master = factory.CreateMaster(client);
             master.Transport.ReadTimeout = 1000;
 
-            // Try to read the primary coil to verify protocol-level communication
+            
             await master.ReadCoilsAsync(_unitId, _primaryCoil, 1);
             return true;
         }
@@ -57,7 +57,7 @@ public sealed class ModbusDevice : DeviceBase, IAccessController, ILightControll
         }
     }
 
-    /// <inheritdoc />
+    
     public async Task SetAccessStateAsync(bool active, CancellationToken cancellationToken)
     {
         using var client = new TcpClient();
@@ -69,11 +69,11 @@ public sealed class ModbusDevice : DeviceBase, IAccessController, ILightControll
         await master.WriteSingleCoilAsync(_unitId, _primaryCoil, active);
     }
 
-    /// <inheritdoc />
+    
     public async Task SetColorAsync(string color, CancellationToken cancellationToken)
     {
-        // Simple mapping for demonstration purposes:
-        // Red = PrimaryCoil, Yellow = PrimaryCoil + 1, Green = PrimaryCoil + 2
+        
+        
         ushort offset = color.ToLowerInvariant() switch
         {
             "red" or "rojo" => 0,
@@ -88,10 +88,10 @@ public sealed class ModbusDevice : DeviceBase, IAccessController, ILightControll
         var factory = new ModbusFactory();
         var master = factory.CreateMaster(client);
 
-        // Turn off all three first (mutually exclusive)
+        
         await master.WriteMultipleCoilsAsync(_unitId, _primaryCoil, [false, false, false]);
         
-        // Turn on the selected one
+        
         await master.WriteSingleCoilAsync(_unitId, (ushort)(_primaryCoil + offset), true);
     }
 }

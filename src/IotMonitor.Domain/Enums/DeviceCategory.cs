@@ -1,8 +1,8 @@
 namespace IotMonitor.Domain.Enums;
 
-/// <summary>
-/// Device categories available for tactical navigation in the console.
-/// </summary>
+
+
+
 public enum DeviceCategory
 {
     Lectura = 1,

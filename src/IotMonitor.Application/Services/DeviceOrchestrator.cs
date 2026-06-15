@@ -9,9 +9,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace IotMonitor.Application.Services;
 
-/// <summary>
-/// Stateful orchestrator that manages the runtime status of all devices.
-/// </summary>
+
+
+
 public sealed class DeviceOrchestrator : IDeviceOrchestrator
 {
     private readonly ConcurrentDictionary<Guid, DeviceSnapshot> _deviceStates = new();
@@ -26,34 +26,34 @@ public sealed class DeviceOrchestrator : IDeviceOrchestrator
         _scopeFactory = scopeFactory;
     }
 
-    /// <inheritdoc />
+    
     public async Task<IReadOnlyCollection<DeviceSnapshot>> GetDashboardSnapshotAsync(CancellationToken cancellationToken)
     {
         await EnsureInitializedAsync(cancellationToken);
         return _deviceStates.Values.ToList().AsReadOnly();
     }
 
-    /// <inheritdoc />
+    
     public async Task<IReadOnlyCollection<DeviceSnapshot>> TestAllConnectionsAsync(CancellationToken cancellationToken)
     {
         await EnsureInitializedAsync(cancellationToken);
 
-        // AlwaysOn devices are maintained by DeviceWorkerService runners in real time.
-        // This method just returns the current snapshot so the console can refresh.
+        
+        
         return _deviceStates.Values.ToList().AsReadOnly();
     }
 
-    /// <inheritdoc />
+    
     public Task ReconnectDeviceAsync(Guid deviceId, CancellationToken cancellationToken)
     {
-        // AlwaysOnDeviceRunner reconnects automatically after any connection drop.
-        // Setting Unknown signals the UI that a reconnect is in progress.
+        
+        
         return UpdateDeviceStatusInternalAsync(deviceId, DeviceStatus.Unknown, cancellationToken);
     }
 
-    /// <summary>
-    /// Updates the status of a device and fires the StatusChanged event if it changed.
-    /// </summary>
+    
+    
+    
     public Task UpdateDeviceStatusInternalAsync(Guid deviceId, DeviceStatus newStatus, CancellationToken cancellationToken)
     {
         if (_deviceStates.TryGetValue(deviceId, out var oldSnapshot))

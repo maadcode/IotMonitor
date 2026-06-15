@@ -4,9 +4,9 @@ using IotMonitor.Domain.Interfaces;
 
 namespace IotMonitor.Infrastructure.Devices;
 
-/// <summary>
-/// Protocol handler for HTTP-based devices (e.g., IP Cameras).
-/// </summary>
+
+
+
 public sealed class HttpDevice : DeviceBase, IPhotographic
 {
     private static readonly HttpClient _httpClient = new() { Timeout = TimeSpan.FromSeconds(10) };
@@ -27,7 +27,7 @@ public sealed class HttpDevice : DeviceBase, IPhotographic
 
     private string BaseUrl => $"http://{IpAddress}:{Port}";
 
-    /// <inheritdoc />
+    
     public override async Task<bool> TestConnectionAsync(CancellationToken cancellationToken)
     {
         try
@@ -46,7 +46,7 @@ public sealed class HttpDevice : DeviceBase, IPhotographic
         }
     }
 
-    /// <inheritdoc />
+    
     public async Task<string> CapturePhotoAsync(string targetFilePath, CancellationToken cancellationToken)
     {
         var response = await _httpClient.GetAsync($"{BaseUrl}{_endpointPath}", cancellationToken);

@@ -11,6 +11,6 @@ public abstract class DeviceEntity
     public int Port { get; set; }
     public DeviceCategory CategoryId { get; set; }
 
-    // Navigation
+    
     public virtual DeviceTypeEntity DeviceType { get; set; } = null!;
 }

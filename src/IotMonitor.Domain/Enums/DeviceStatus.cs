@@ -1,8 +1,8 @@
 namespace IotMonitor.Domain.Enums;
 
-/// <summary>
-/// Represents the runtime connectivity status displayed in the dashboard.
-/// </summary>
+
+
+
 public enum DeviceStatus
 {
     Unknown = 0,
