@@ -32,7 +32,7 @@ public class OrchestratorTests
     [TestMethod]
     public async Task GetDashboardSnapshotAsync_ShouldInitializeAndReturnDevices()
     {
-        // Arrange
+        
         var deviceId = Guid.NewGuid();
         var devices = new List<DeviceEntity>
         {
@@ -50,10 +50,10 @@ public class OrchestratorTests
 
         var orchestrator = new DeviceOrchestrator(_scopeFactoryMock.Object);
 
-        // Act
+        
         var snapshot = await orchestrator.GetDashboardSnapshotAsync(CancellationToken.None);
 
-        // Assert
+        
         Assert.AreEqual(1, snapshot.Count);
         Assert.AreEqual(deviceId, snapshot.First().Id);
         Assert.AreEqual(DeviceStatus.Unknown, snapshot.First().Status);
@@ -63,7 +63,7 @@ public class OrchestratorTests
     [TestMethod]
     public async Task UpdateDeviceStatus_ShouldFireEventOnStatusChange()
     {
-        // Arrange
+        
         var deviceId = Guid.NewGuid();
         var devices = new List<DeviceEntity>
         {
@@ -81,16 +81,16 @@ public class OrchestratorTests
 
         var orchestrator = new DeviceOrchestrator(_scopeFactoryMock.Object);
         
-        // Trigger initialization
+        
         await orchestrator.GetDashboardSnapshotAsync(CancellationToken.None);
 
         DeviceStatusChangedEventArgs? raisedEvent = null;
         orchestrator.StatusChanged += (s, e) => raisedEvent = e;
 
-        // Act
+        
         await orchestrator.UpdateDeviceStatusInternalAsync(deviceId, DeviceStatus.Connected, CancellationToken.None);
 
-        // Assert
+        
         Assert.IsNotNull(raisedEvent);
         Assert.AreEqual(deviceId, raisedEvent.DeviceId);
         Assert.AreEqual(DeviceStatus.Unknown, raisedEvent.OldStatus);

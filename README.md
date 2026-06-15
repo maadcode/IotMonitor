@@ -68,8 +68,12 @@ docker compose up -d --build
 ```
 
 ### 2. Manual Configuration (Required)
-Once the containers are running, you must seed the data to simulate the devices:
+Once the containers are running, you must apply the database migrations and seed the data to simulate the devices:
 
+*   **Database Migrations:** Execute the following command to create the database schema:
+    ```bash
+    dotnet ef database update --project src/IotMonitor.Data/IotMonitor.Data.csproj --startup-project src/IotMonitor.ConsoleApp/IotMonitor.ConsoleApp.csproj
+    ```
 *   **Database Seeding:** Execute the SQL script located in `seed/sql/seed_devices.sql` against the running SQL Server instance (port 1433). This populates the categories, device types, and initial devices.
 *   **Node-RED Flows:** 
     1. Access the Node-RED editor at `http://localhost:1880`.
@@ -93,6 +97,7 @@ dotnet run --project src/IotMonitor.ConsoleApp/IotMonitor.ConsoleApp.csproj
 Execute the test suite to ensure system integrity:
 
 ```bash
+cd tests/IotMonitor.Tests/
 dotnet test
 ```
 
