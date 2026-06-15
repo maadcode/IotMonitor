@@ -1,5 +1,6 @@
 using IotMonitor.Application.Abstractions;
 using IotMonitor.Domain.Enums;
+using IotMonitor.Domain.Interfaces;
 using IotMonitor.Domain.Models;
 using Spectre.Console;
 
@@ -8,8 +9,15 @@ namespace IotMonitor.Presentation;
 /// <summary>
 /// Renders the tactical console and routes user actions.
 /// </summary>
-public sealed class ConsoleShell(IDeviceOrchestrator orchestrator, IUdpDeviceSender udpSender, IPhotoCaptureService photoCaptureService)
+public sealed class ConsoleShell(
+    IDeviceOrchestrator orchestrator, 
+    IUdpDeviceSender udpSender, 
+    IPhotoCaptureService photoCaptureService,
+    IAccessControlService accessControlService,
+    ILightControlService lightControlService)
 {
+    private Table _dashboardTable = null!;
+
     /// <summary>
     /// Runs the shell loop until the user exits.
     /// </summary>
@@ -20,167 +28,203 @@ public sealed class ConsoleShell(IDeviceOrchestrator orchestrator, IUdpDeviceSen
         ArgumentNullException.ThrowIfNull(orchestrator);
 
         var snapshot = await orchestrator.GetDashboardSnapshotAsync(cancellationToken).ConfigureAwait(false);
-        var table = CreateDashboardTable(snapshot);
+        _dashboardTable = CreateDashboardTable(snapshot);
 
-        await AnsiConsole.Live(table)
-            .StartAsync(async ctx =>
+        // Subscribe to state changes to update the table object
+        orchestrator.StatusChanged += async (s, e) =>
+        {
+            var updatedSnapshot = await orchestrator.GetDashboardSnapshotAsync(cancellationToken).ConfigureAwait(false);
+            UpdateDashboardTable(_dashboardTable, updatedSnapshot);
+        };
+
+        var keepRunning = true;
+        
+        // Main Loop: We render the dashboard and then show the interactive menu.
+        while (keepRunning && !cancellationToken.IsCancellationRequested)
+        {
+            RenderStaticDashboard();
+
+            var rootOption = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[bold yellow]Menu Principal[/]")
+                    .AddChoices("Gestionar Categorias", "Actualizar Todo", "Salir"));
+
+            switch (rootOption)
             {
-                // Subscribe to state changes to update the live table
-                orchestrator.StatusChanged += async (s, e) =>
-                {
-                    var updatedSnapshot = await orchestrator.GetDashboardSnapshotAsync(cancellationToken).ConfigureAwait(false);
-                    UpdateDashboardTable(table, updatedSnapshot);
-                    ctx.Refresh();
-                };
-
-                var keepRunning = true;
-                while (keepRunning && !cancellationToken.IsCancellationRequested)
-                {
-                    ctx.Refresh();
-
-                    var option = AnsiConsole.Prompt(
-                        new SelectionPrompt<string>()
-                            .Title("Selecciona una accion")
-                            .AddChoices("Actualizar todo", "Reconectar Sensor", "Enviar Mensaje UDP", "Tomar Foto", "Salir"));
-
-                    switch (option)
-                    {
-                        case "Actualizar todo":
-                            await orchestrator.TestAllConnectionsAsync(cancellationToken).ConfigureAwait(false);
-                            break;
-                        case "Reconectar Sensor":
-                            await HandleReconnectionAsync(cancellationToken).ConfigureAwait(false);
-                            break;
-                        case "Enviar Mensaje UDP":
-                            await HandleSendUdpMessageAsync(cancellationToken).ConfigureAwait(false);
-                            break;
-                        case "Tomar Foto":
-                            await HandleCapturePhotoAsync(cancellationToken).ConfigureAwait(false);
-                            break;
-                        case "Salir":
-                            keepRunning = false;
-                            break;
-                    }
-                }
-            });
+                case "Gestionar Categorias":
+                    await HandleCategoryNavigationAsync(cancellationToken).ConfigureAwait(false);
+                    break;
+                case "Actualizar Todo":
+                    await orchestrator.TestAllConnectionsAsync(cancellationToken).ConfigureAwait(false);
+                    AnsiConsole.MarkupLine("[green]Pruebas de conectividad lanzadas.[/]");
+                    await Task.Delay(1000, cancellationToken);
+                    break;
+                case "Salir":
+                    keepRunning = false;
+                    break;
+            }
+        }
     }
 
-    private async Task HandleCapturePhotoAsync(CancellationToken cancellationToken)
+    private void RenderStaticDashboard()
+    {
+        AnsiConsole.Clear();
+        AnsiConsole.Write(_dashboardTable);
+        AnsiConsole.WriteLine();
+    }
+
+    private async Task HandleCategoryNavigationAsync(CancellationToken cancellationToken)
     {
         var devices = await orchestrator.GetDashboardSnapshotAsync(cancellationToken).ConfigureAwait(false);
-        var httpChoices = devices
-            .Where(d => d.Lifecycle == ConnectionLifecycle.OnDemand)
-            .Select(d => $"{d.Alias} ({d.Id})")
-            .ToList();
+        var categories = devices.Select(d => d.Category.ToString()).Distinct().OrderBy(c => c).ToList();
 
-        if (httpChoices.Count == 0)
+        var categorySelection = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("Selecciona una [blue]Categoria[/]")
+                .AddChoices(categories)
+                .AddChoices("Volver"));
+
+        if (categorySelection == "Volver") return;
+
+        if (Enum.TryParse<DeviceCategory>(categorySelection, out var selectedCategory))
         {
-            AnsiConsole.MarkupLine("[yellow]No hay camaras HTTP disponibles.[/]");
-            await Task.Delay(2000, cancellationToken);
+            await HandleDeviceNavigationAsync(selectedCategory, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private async Task HandleDeviceNavigationAsync(DeviceCategory category, CancellationToken cancellationToken)
+    {
+        var devices = await orchestrator.GetDashboardSnapshotAsync(cancellationToken).ConfigureAwait(false);
+        var categoryDevices = devices.Where(d => d.Category == category).ToList();
+
+        if (categoryDevices.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[yellow]No hay dispositivos en esta categoria.[/]");
+            await Task.Delay(1500, cancellationToken);
             return;
         }
 
+        var deviceChoices = categoryDevices
+            .Select(d => $"{d.Alias} [grey]({d.Status})[/] | {d.Id}")
+            .ToList();
+
         var selection = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
-                .Title("Selecciona la camara")
-                .AddChoices(httpChoices)
-                .AddChoices("Cancelar"));
+                .Title($"Dispositivos en [blue]{category}[/]")
+                .AddChoices(deviceChoices)
+                .AddChoices("Volver"));
 
-        if (selection == "Cancelar") return;
+        if (selection == "Volver") return;
 
-        var idPart = selection.Split('(')[1].TrimEnd(')');
-        if (!Guid.TryParse(idPart, out var deviceId)) return;
+        var idPart = selection.Split('|')[1].Trim();
+        if (Guid.TryParse(idPart, out var deviceId))
+        {
+            var device = categoryDevices.First(d => d.Id == deviceId);
+            await HandleActionNavigationAsync(device, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private async Task HandleActionNavigationAsync(DeviceSnapshot device, CancellationToken cancellationToken)
+    {
+        var actions = new List<string>();
+
+        if (device.Capabilities.Contains(nameof(IPhotographic))) actions.Add("Tomar Foto");
+        if (device.Capabilities.Contains(nameof(IUdpMessenger))) actions.Add("Enviar Mensaje UDP");
+        if (device.Capabilities.Contains(nameof(IAccessController))) actions.Add("Controlar Acceso (Abrir/Cerrar)");
+        if (device.Capabilities.Contains(nameof(ILightController))) actions.Add("Cambiar Color Semaforo");
+        if (device.Lifecycle == ConnectionLifecycle.AlwaysOn) actions.Add("Reconectar");
+
+        if (actions.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[yellow]Este dispositivo no tiene acciones tacticas disponibles.[/]");
+            await Task.Delay(1500, cancellationToken);
+            return;
+        }
+
+        var actionSelection = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title($"Acciones para [green]{device.Alias}[/]")
+                .AddChoices(actions)
+                .AddChoices("Volver"));
+
+        if (actionSelection == "Volver") return;
 
         try
         {
-            AnsiConsole.MarkupLine("[grey]Capturando foto...[/]");
-            var savedPath = await photoCaptureService.CapturePhotoAsync(deviceId, cancellationToken)
-                .ConfigureAwait(false);
-            AnsiConsole.MarkupLine($"[green]Foto guardada en:[/] {Markup.Escape(savedPath)}");
+            switch (actionSelection)
+            {
+                case "Tomar Foto":
+                    await ExecuteCapturePhotoAsync(device, cancellationToken);
+                    break;
+                case "Enviar Mensaje UDP":
+                    await ExecuteSendUdpMessageAsync(device, cancellationToken);
+                    break;
+                case "Controlar Acceso (Abrir/Cerrar)":
+                    await ExecuteAccessControlAsync(device, cancellationToken);
+                    break;
+                case "Cambiar Color Semaforo":
+                    await ExecuteLightControlAsync(device, cancellationToken);
+                    break;
+                case "Reconectar":
+                    await orchestrator.ReconnectDeviceAsync(device.Id, cancellationToken);
+                    AnsiConsole.MarkupLine("[green]Comando de reconexion enviado.[/]");
+                    break;
+            }
         }
         catch (Exception ex)
         {
-            AnsiConsole.MarkupLine($"[red]Error al capturar foto: {Markup.Escape(ex.Message)}[/]");
+            AnsiConsole.MarkupLine($"[red]Error al ejecutar accion: {Markup.Escape(ex.Message)}[/]");
         }
 
         await Task.Delay(2000, cancellationToken);
     }
 
-    private async Task HandleSendUdpMessageAsync(CancellationToken cancellationToken)
+    private async Task ExecuteCapturePhotoAsync(DeviceSnapshot device, CancellationToken cancellationToken)
     {
-        var devices = await orchestrator.GetDashboardSnapshotAsync(cancellationToken).ConfigureAwait(false);
-        var udpChoices = devices
-            .Where(d => d.Lifecycle == ConnectionLifecycle.FireAndForget)
-            .Select(d => $"{d.Alias} ({d.Id})")
-            .ToList();
+        if (!AnsiConsole.Confirm($"¿Deseas capturar una foto desde [green]{device.Alias}[/]?")) return;
 
-        if (udpChoices.Count == 0)
-        {
-            AnsiConsole.MarkupLine("[yellow]No hay dispositivos UDP disponibles.[/]");
-            await Task.Delay(2000, cancellationToken);
-            return;
-        }
+        AnsiConsole.MarkupLine("[grey]Capturando foto...[/]");
+        var savedPath = await photoCaptureService.CapturePhotoAsync(device.Id, cancellationToken).ConfigureAwait(false);
+        AnsiConsole.MarkupLine($"[green]Foto guardada en:[/] {Markup.Escape(savedPath)}");
+    }
 
-        var selection = AnsiConsole.Prompt(
-            new SelectionPrompt<string>()
-                .Title("Selecciona el dispositivo UDP")
-                .AddChoices(udpChoices)
-                .AddChoices("Cancelar"));
-
-        if (selection == "Cancelar") return;
-
-        var idPart = selection.Split('(')[1].TrimEnd(')');
-        if (!Guid.TryParse(idPart, out var deviceId)) return;
-
-        // AnsiConsole.Ask (TextPrompt) cannot run inside a Live display due to Spectre's
-        // exclusivity mode — use raw Console I/O instead.
+    private async Task ExecuteSendUdpMessageAsync(DeviceSnapshot device, CancellationToken cancellationToken)
+    {
         AnsiConsole.MarkupLine("[grey]Ingresa el mensaje a enviar:[/] ");
         var message = Console.ReadLine() ?? string.Empty;
         if (string.IsNullOrWhiteSpace(message)) return;
 
-        try
-        {
-            await udpSender.SendToDeviceAsync(deviceId, message, cancellationToken).ConfigureAwait(false);
-            AnsiConsole.MarkupLine($"[green]Mensaje enviado a {Markup.Escape(selection)}[/]");
-        }
-        catch (Exception ex)
-        {
-            AnsiConsole.MarkupLine($"[red]Error al enviar mensaje: {Markup.Escape(ex.Message)}[/]");
-        }
+        if (!AnsiConsole.Confirm($"¿Enviar \"{Markup.Escape(message)}\" a [green]{device.Alias}[/]?")) return;
 
-        await Task.Delay(1500, cancellationToken);
+        await udpSender.SendToDeviceAsync(device.Id, message, cancellationToken).ConfigureAwait(false);
+        AnsiConsole.MarkupLine($"[green]Mensaje enviado correctamente.[/]");
     }
 
-    private async Task HandleReconnectionAsync(CancellationToken cancellationToken)
+    private async Task ExecuteAccessControlAsync(DeviceSnapshot device, CancellationToken cancellationToken)
     {
-        var devices = await orchestrator.GetDashboardSnapshotAsync(cancellationToken).ConfigureAwait(false);
-        var sensorChoices = devices
-            .Where(d => d.Lifecycle == ConnectionLifecycle.AlwaysOn)
-            .Select(d => $"{d.Alias} ({d.Id})")
-            .ToList();
-
-        if (sensorChoices.Count == 0)
-        {
-            AnsiConsole.MarkupLine("[yellow]No hay sensores Always-On disponibles para reconectar.[/]");
-            await Task.Delay(2000, cancellationToken);
-            return;
-        }
-
-        var selection = AnsiConsole.Prompt(
+        var state = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
-                .Title("Selecciona el sensor a reconectar")
-                .AddChoices(sensorChoices)
-                .AddChoices("Cancelar"));
+                .Title("Selecciona el estado")
+                .AddChoices("Activar/Abrir", "Desactivar/Cerrar", "Cancelar"));
 
-        if (selection == "Cancelar") return;
+        if (state == "Cancelar") return;
 
-        var idPart = selection.Split('(')[1].TrimEnd(')');
-        if (Guid.TryParse(idPart, out var deviceId))
-        {
-            await orchestrator.ReconnectDeviceAsync(deviceId, cancellationToken).ConfigureAwait(false);
-            AnsiConsole.MarkupLine($"[green]Comando de reconexion enviado para {selection}[/]");
-            await Task.Delay(1000, cancellationToken);
-        }
+        bool active = state == "Activar/Abrir";
+        await accessControlService.SetAccessStateAsync(device.Id, active, cancellationToken).ConfigureAwait(false);
+        AnsiConsole.MarkupLine($"[green]Comando de acceso '{state}' enviado.[/]");
+    }
+
+    private async Task ExecuteLightControlAsync(DeviceSnapshot device, CancellationToken cancellationToken)
+    {
+        var color = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("Selecciona el color")
+                .AddChoices("Rojo", "Amarillo", "Verde", "Cancelar"));
+
+        if (color == "Cancelar") return;
+
+        await lightControlService.SetColorAsync(device.Id, color.ToLowerInvariant(), cancellationToken).ConfigureAwait(false);
+        AnsiConsole.MarkupLine($"[green]Color cambiado a {color}.[/]");
     }
 
     private static Table CreateDashboardTable(IReadOnlyCollection<DeviceSnapshot> devices)

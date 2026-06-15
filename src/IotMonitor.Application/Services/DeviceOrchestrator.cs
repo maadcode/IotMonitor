@@ -1,7 +1,9 @@
 using System.Collections.Concurrent;
 using IotMonitor.Application.Abstractions;
 using IotMonitor.Data.Abstractions;
+using IotMonitor.Data.Entities;
 using IotMonitor.Domain.Enums;
+using IotMonitor.Domain.Interfaces;
 using IotMonitor.Domain.Models;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -91,13 +93,23 @@ public sealed class DeviceOrchestrator : IDeviceOrchestrator
 
             foreach (var device in devices)
             {
+                var capabilities = new List<string>();
+                if (device is HttpDeviceEntity) capabilities.Add(nameof(IPhotographic));
+                if (device is UdpDeviceEntity) capabilities.Add(nameof(IUdpMessenger));
+                if (device is ModbusDeviceEntity)
+                {
+                    capabilities.Add(nameof(IAccessController));
+                    capabilities.Add(nameof(ILightController));
+                }
+
                 var snapshot = new DeviceSnapshot(
                     device.Id,
                     device.Alias,
                     device.CategoryId,
                     device.DeviceType.Lifecycle,
                     DeviceStatus.Unknown,
-                    null);
+                    null,
+                    capabilities.AsReadOnly());
 
                 _deviceStates.TryAdd(device.Id, snapshot);
             }

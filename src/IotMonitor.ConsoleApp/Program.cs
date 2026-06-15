@@ -31,6 +31,8 @@ builder.Services.AddScoped<IDeviceRepository, DeviceRepository>();
 builder.Services.AddSingleton<IUdpDeviceSender, UdpDeviceSender>();
 builder.Services.AddSingleton<IDeviceOrchestrator, DeviceOrchestrator>();
 builder.Services.AddSingleton<IPhotoCaptureService, PhotoCaptureService>();
+builder.Services.AddSingleton<IAccessControlService, AccessControlService>();
+builder.Services.AddSingleton<ILightControlService, LightControlService>();
 builder.Services.AddHostedService<DeviceWorkerService>();
 builder.Services.AddSingleton<ConsoleShell>();
 
